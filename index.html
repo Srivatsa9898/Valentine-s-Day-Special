@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For Vaishnavi ❤️</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap');
 
@@ -14,24 +15,25 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-            background-color: #ffdde1;
+            background: #ffe4e1;
             font-family: 'Poppins', sans-serif;
             overflow: hidden;
             text-align: center;
         }
 
-        /* Floating Hearts Background */
-        .bg-heart {
+        /* Floating Animation for background */
+        .heart-bg {
             position: absolute;
-            color: rgba(255, 182, 193, 0.5);
-            animation: float 6s infinite ease-in-out;
+            top: -10%;
+            color: rgba(255, 105, 180, 0.3);
+            font-size: 20px;
+            user-select: none;
             z-index: -1;
+            animation: fall linear forwards;
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(360deg); }
         }
 
         .container {
@@ -42,6 +44,7 @@
             max-width: 90%;
             width: 500px;
             position: relative;
+            z-index: 10;
         }
 
         h1 {
@@ -55,9 +58,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 115px; /* Approx 30mm gap initially */
+            gap: 115px;
             position: relative;
-            height: 60px; /* Fixing height to prevent layout shifts */
+            height: 60px;
         }
 
         button {
@@ -67,62 +70,36 @@
             border-radius: 50px;
             cursor: pointer;
             transition: transform 0.2s;
-            font-family: 'Poppins', sans-serif;
             font-weight: 600;
         }
 
         #yesBtn {
-            background-color: #ff69b4; /* Pink */
+            background-color: #ff69b4;
             color: white;
             box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
-            z-index: 10;
-        }
-
-        #yesBtn:hover {
-            transform: scale(1.1);
-            background-color: #ff1493;
         }
 
         #noBtn {
             background-color: #e0e0e0;
             color: #555;
-            position: absolute; /* Allows it to move freely */
-            /* Initial position roughly next to Yes button */
+            position: absolute;
             left: 60%; 
         }
 
-        /* Success Page Styles */
-        #successPage {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .heart-beat {
-            font-size: 100px;
-            color: #ff4d4d;
-            animation: beat 0.6s infinite alternate;
-        }
-
-        @keyframes beat {
-            to { transform: scale(1.2); }
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        #successPage { display: none; flex-direction: column; align-items: center; }
+        .heart-beat { font-size: 100px; color: #ff4d4d; animation: beat 0.6s infinite alternate; }
+        @keyframes beat { to { transform: scale(1.2); } }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="bg-heart" style="top: 10%; left: 10%; font-size: 30px;">❤️</div>
-    <div class="bg-heart" style="top: 20%; right: 20%; font-size: 40px; animation-delay: 1s;">💖</div>
-    <div class="bg-heart" style="bottom: 15%; left: 15%; font-size: 50px; animation-delay: 2s;">💕</div>
+    <audio id="bgMusic" loop>
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
 
     <div id="proposalPage" class="container">
         <h1>Vaishnavi, will you be my Valentine?</h1>
-        
         <div class="buttons">
             <button id="yesBtn" onclick="acceptProposal()">Yes</button>
             <button id="noBtn">No</button>
@@ -132,94 +109,52 @@
     <div id="successPage" class="container hidden">
         <div class="heart-beat">❤️</div>
         <h1>I Love You Too Gombe!</h1>
-        <p>See you on Valentine's Day!</p>
+        <p>You've made me the happiest person! ✨</p>
     </div>
 
     <script>
         const noBtn = document.getElementById('noBtn');
-        const yesBtn = document.getElementById('yesBtn');
-        const proposalPage = document.getElementById('proposalPage');
-        const successPage = document.getElementById('successPage');
+        const bgMusic = document.getElementById('bgMusic');
 
-        // Initial position tracking
-        let initialX;
-        let initialY;
+        // Create falling background hearts
+        setInterval(() => {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-bg');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = Math.random() * 3 + 2 + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 5000);
+        }, 300);
 
-        // Wait for layout to settle to get correct coordinates
-        window.onload = () => {
-            const rect = noBtn.getBoundingClientRect();
-            initialX = rect.left;
-            initialY = rect.top;
-        };
-
-        // Logic to move the 'No' button
-        document.addEventListener('mousemove', function(e) {
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
-            
+        // Movement logic for No button
+        document.addEventListener('mousemove', (e) => {
             const btnRect = noBtn.getBoundingClientRect();
-            const btnCenterX = btnRect.left + btnRect.width / 2;
-            const btnCenterY = btnRect.top + btnRect.height / 2;
-
-            // Calculate distance between mouse and button center
-            const distance = Math.sqrt(
-                Math.pow(mouseX - btnCenterX, 2) + 
-                Math.pow(mouseY - btnCenterY, 2)
-            );
-
-            // Approx 30mm is roughly 115px (depending on screen), we'll use 100px as a safe "danger zone"
-            const triggerDistance = 100; 
-
-            if (distance < triggerDistance) {
-                // Move AWAY from mouse
-                const angle = Math.atan2(mouseY - btnCenterY, mouseX - btnCenterX);
-                
-                // Move to opposite direction
-                // We add a randomness factor so it doesn't get stuck in corners
-                const moveDistance = 150; 
-                
-                let newX = btnCenterX - Math.cos(angle) * moveDistance;
-                let newY = btnCenterY - Math.sin(angle) * moveDistance;
-
-                // Boundary checks (keep it within screen roughly)
-                const margin = 50;
-                if (newX < margin) newX = window.innerWidth - margin;
-                if (newX > window.innerWidth - margin) newX = margin;
-                if (newY < margin) newY = window.innerHeight - margin;
-                if (newY > window.innerHeight - margin) newY = margin;
-
-                noBtn.style.position = 'fixed'; // Switch to fixed to move freely relative to viewport
-                noBtn.style.left = (newX - btnRect.width/2) + 'px';
-                noBtn.style.top = (newY - btnRect.height/2) + 'px';
-            } 
-            else {
-                // Optional: Return to original position if mouse is far away
-                // Note: The prompt asked to return if not near. 
-                // However, returning instantly can make it glitchy if the mouse is in the path.
-                // We will leave it at the new position to ensure it is TRULY unclickable as per "Impossible" requirement.
-                // If you strictly want it to snap back, uncomment the lines below:
-                
-                /*
-                if (noBtn.style.position === 'fixed') {
-                     // Check if original spot is safe (mouse not there)
-                     const distToOrigin = Math.sqrt(Math.pow(mouseX - initialX, 2) + Math.pow(mouseY - initialY, 2));
-                     if (distToOrigin > triggerDistance) {
-                         noBtn.style.position = 'absolute';
-                         noBtn.style.left = '60%'; // Reset to CSS default
-                         noBtn.style.top = 'auto';
-                     }
-                }
-                */
+            const distance = Math.sqrt(Math.pow(e.clientX - (btnRect.left + btnRect.width/2), 2) + Math.pow(e.clientY - (btnRect.top + btnRect.height/2), 2));
+            if (distance < 100) {
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = Math.random() * (window.innerWidth - 100) + 'px';
+                noBtn.style.top = Math.random() * (window.innerHeight - 50) + 'px';
             }
         });
 
         function acceptProposal() {
-            proposalPage.classList.add('hidden');
-            successPage.classList.remove('hidden');
-            successPage.style.display = 'flex';
-            
-            // Trigger confetti or extra effects here if desired
-            document.body.style.backgroundColor = "#ffc0cb";
+            // Start Music
+            bgMusic.play();
+
+            // Fire Confetti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff69b4', '#ff1493', '#ffffff']
+            });
+
+            // Switch Pages
+            document.getElementById('proposalPage').classList.add('hidden');
+            const success = document.getElementById('successPage');
+            success.classList.remove('hidden');
+            success.style.display = 'flex';
         }
     </script>
 </body>
